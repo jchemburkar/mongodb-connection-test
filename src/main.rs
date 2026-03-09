@@ -24,8 +24,7 @@ struct Args {
 async fn main() {
     env_logger::init();
     let args = Args::parse();
-    
-    info!("Testing MongoDB connection...");
+
     println!("Testing MongoDB connection...");
     println!("URI: {}", args.uri);
     
@@ -40,12 +39,10 @@ async fn main() {
         Ok(_) => {
             println!("✅ Connection successful!");
             println!("Successfully connected to MongoDB database.");
-            info!("MongoDB connection test completed successfully");
         }
         Err(e) => {
             println!("❌ Connection failed!");
             println!("Error: {}", e);
-            error!("MongoDB connection failed: {}", e);
             process::exit(1);
         }
     }
@@ -64,23 +61,23 @@ async fn test_connection(args: &Args) -> Result<(), Box<dyn std::error::Error>> 
         uri.insert_str(protocol_end, &credentials);
     }
     
-    info!("Parsing MongoDB connection options");
-    let client_options = ClientOptions::parse(&uri).resolver_config(ResolverConfig::cloudflare()).await?;
+    println!("Parsing MongoDB connection options");
+    let client_options = ClientOptions::parse(&uri).await?;
     
-    info!("Creating MongoDB client");
+    println!("Creating MongoDB client with default DNS resolver");
     let client = Client::with_options(client_options)?;
     
     let database_name = args.database.as_deref().unwrap_or("admin");
     let database = client.database(database_name);
     
-    info!("Testing connection with ping command");
+    println!("Testing connection with ping command");
     let ping_result = database.run_command(doc! {"ping": 1}).await?;
     
-    info!("Ping result: {:?}", ping_result);
+    println!("Ping result: {:?}", ping_result);
     
-    info!("Testing database access by listing collections");
+    println!("Testing database access by listing collections");
     let _collections = database.list_collection_names().await?;
-    info!("Successfully listed collections");
+    println!("Successfully listed collections");
     
     Ok(())
 }
